@@ -1,24 +1,14 @@
 import { Sequelize } from "sequelize";
-import { config } from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const pathN = path.resolve(__dirname, "../.env");
-
-console.log(pathN);
-config({ path: path.resolve(__dirname, "../.env") });
 
 const env = process.env.NODE_ENV || "development";
+
 const dbConfig = {
   development: {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    port: process.env.DB_PORT || 5432, // Default PostgreSQL port
     dialect: "postgres",
     logging: false,
   },
@@ -35,7 +25,7 @@ const dbConfig = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    port: process.env.DB_PORT || 5432,
     dialect: "postgres",
     logging: false,
     pool: {
@@ -47,6 +37,18 @@ const dbConfig = {
   },
 };
 
-const sequelize = new Sequelize(dbConfig[env]);
+// Initialize Sequelize
+const sequelize = new Sequelize(
+  dbConfig[env].database,
+  dbConfig[env].username,
+  dbConfig[env].password,
+  {
+    host: dbConfig[env].host,
+    port: dbConfig[env].port,
+    dialect: "postgres",
+    logging: false,
+    pool: dbConfig[env].pool || {},
+  }
+);
 
 export default sequelize;
